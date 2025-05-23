@@ -85,3 +85,7 @@ http://localhost:5000
 - Deploy como API em ambiente cloud
 - Aumento do recall via técnicas de oversampling
 - Expansão para outros tipos de sinistros (médicos, hospitalares)
+
+##Link do video:
+-https://youtu.be/9edBmkYf7vM
+
