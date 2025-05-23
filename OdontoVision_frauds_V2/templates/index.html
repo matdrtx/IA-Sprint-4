@@ -1,0 +1,88 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <title>OdontoVision - Detecção de Fraudes</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<div class="container">
+    <h1>🦷 OdontoVision</h1>
+    <h2>Detecção Inteligente de Fraudes em Sinistros Odontológicos</h2>
+    <form method="POST" action="/predict">
+        <label>ID do Paciente:</label>
+        <input type="number" name="paciente_id" id="paciente_id" required>
+
+        <label>ID do Dentista:</label>
+        <input type="number" name="dentista_id" id="dentista_id" required>
+
+        <label>Consultas:</label>
+        <input type="number" name="num_consultas" id="num_consultas" required>
+
+        <label>Custo do Procedimento:</label>
+        <input type="number" step="0.01" name="procedimento_custo" id="procedimento_custo" required>
+
+        <label>Idade do Paciente:</label>
+        <input type="number" name="idade_paciente" id="idade_paciente" required>
+
+        <label>Média por Consulta:</label>
+        <input type="number" step="0.01" name="media_custo_por_consulta" id="media_custo_por_consulta" readonly>
+
+        <label>Frequência do Dentista:</label>
+        <input type="number" name="freq_dentista" id="freq_dentista" readonly>
+
+        <label>Frequência do Paciente:</label>
+        <input type="number" name="freq_paciente" id="freq_paciente" readonly>
+
+        <label>Categoria de Idade:</label>
+        <select name="categoria_idade" id="categoria_idade" required>
+            <option value="jovem">Jovem</option>
+            <option value="adulto">Adulto</option>
+            <option value="meia-idade">Meia-idade</option>
+            <option value="idoso">Idoso</option>
+        </select>
+        <button type="submit">Verificar Fraude</button>
+    </form>
+
+    {% if prediction is not none %}
+        <div class="result">
+            <strong>Resultado:</strong>
+            <span class="{{ 'fraude' if prediction == 1 else 'normal' }}">
+                {% if prediction == 1 %} Fraude Detectada! {% else %} Sem Fraude. {% endif %}
+            </span>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+const baseStats = {{ stats_json|safe }};
+function updateMedia() {
+    const consultas = parseFloat(document.getElementById("num_consultas").value);
+    const custo = parseFloat(document.getElementById("procedimento_custo").value);
+    if (!isNaN(consultas) && !isNaN(custo) && consultas > 0) {
+        document.getElementById("media_custo_por_consulta").value = (custo / consultas).toFixed(2);
+    }
+}
+document.getElementById("num_consultas").addEventListener("input", updateMedia);
+document.getElementById("procedimento_custo").addEventListener("input", updateMedia);
+
+document.getElementById("dentista_id").addEventListener("input", function() {
+    const id = this.value;
+    document.getElementById("freq_dentista").value = baseStats.dentistas[id] || 0;
+});
+document.getElementById("paciente_id").addEventListener("input", function() {
+    const id = this.value;
+    document.getElementById("freq_paciente").value = baseStats.pacientes[id] || 0;
+});
+document.getElementById("idade_paciente").addEventListener("input", function () {
+    const idade = parseInt(this.value);
+    const cat = document.getElementById("categoria_idade");
+    if (idade <= 18) cat.value = "jovem";
+    else if (idade <= 35) cat.value = "adulto";
+    else if (idade <= 60) cat.value = "meia-idade";
+    else cat.value = "idoso";
+});
+</script>
+</body>
+</html>
